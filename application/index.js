@@ -4,14 +4,13 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-// Set up multer storage configuration
+// multer storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Store files in the 'public/uploads' directory
     cb(null, 'public/uploads');
   },
   filename: function (req, file, cb) {
-    // Rename file to ensure uniqueness (with timestamp)
+    // Renaming to include timestamps
     cb(null, Date.now() + path.extname(file.originalname));
   }
 });
@@ -25,13 +24,11 @@ const upload = multer({ storage: storage });
 app.set('views', path.join(__dirname, 'frontend'));
 app.set('view engine', 'ejs');
 
-
-// Serve static files from 'public' folder (uploads)
 app.use(express.static('public'));
 
-// Home route with file upload form and file list
+// Home page route 
 app.get('/', (req, res) => {
-  // List all files in 'uploads' folder
+  // List files
   fs.readdir('public/uploads', (err, files) => {
     if (err) {
       return res.send('Error reading directory');
@@ -40,15 +37,15 @@ app.get('/', (req, res) => {
   });
 });
 
-// Route to handle file upload
+// File upload Route
 app.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.send('No file uploaded.');
-  }
-  res.render('success', { filename: req.file.filename });
-});
+    if (!req.file) {
+        return res.json({ success: false, message: 'No file uploaded.' });
+      }
+      res.json({ success: true, message: 'File uploaded successfully!', filename: req.file.filename });
+    });
 
-// Route to handle file deletion
+// Fiel Del handle Route
 app.get('/delete/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join('public/uploads', filename);
@@ -61,7 +58,7 @@ app.get('/delete/:filename', (req, res) => {
   });
 });
 
-// Route to handle file download
+// File Downlaod Route
 app.get('/download/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join('public/uploads', filename);
@@ -73,7 +70,6 @@ app.get('/download/:filename', (req, res) => {
   });
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
