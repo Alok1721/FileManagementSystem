@@ -1,0 +1,75 @@
+.dashboard-container {
+    display: flex;
+  }
+  
+  .main-content {
+    padding: 20px;
+    flex: 1;
+  }
+  
+  .title {
+    font-size: 32px;
+    font-weight: bold;
+  }
+  
+  .subtitle {
+    font-size: 18px;
+    color: gray;
+  }
+  
+  .features {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  
+  .feature-card {
+    padding: 70px;
+    border-radius: 10px;
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .drag-drop {
+    background: #a855f7;
+  }
+  
+  .ai-seeker {
+    background: #60a5fa;
+  }
+  
+  .ask-me {
+    background: #f59e0b;
+  }
+  
+  .storage-stats {
+    margin-top: 30px;
+  }
+  
+  .storage-bars div {
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .doc1 { background: #4f46e5; }
+  .doc2 { background: #3b82f6; }
+  .doc3 { background: #22c55e; }
+  .unused { background: #6b7280; }
+  
+  .recent-files table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .recent-files th, .recent-files td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  

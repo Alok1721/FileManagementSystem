@@ -1,0 +1,44 @@
+.container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  h2 {
+    color: #333;
+    text-align: center;
+  }
+  
+  .upload-box {
+    border: 2px dashed #007bff;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+  
+  .upload-label {
+    cursor: pointer;
+    color: #007bff;
+    font-weight: bold;
+  }
+  
+  .file-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .file-table th, .file-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .file-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+  
+  .file-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
