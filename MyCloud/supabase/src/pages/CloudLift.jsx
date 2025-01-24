@@ -11,7 +11,7 @@ const CloudLift = () => {
   }, []);
 
   const fetchFiles = async () => {
-    let { data, error } = await supabase.from('uploads').select('*');
+    let { data, error } = await supabase.from('uploads').select('*').order('uploaded_date',{ascending:false}).limit(10);
     if (error) {
       console.error('Error fetching files:', error);
     } else {
@@ -37,7 +37,7 @@ const CloudLift = () => {
         // id: 2,
         file_name: file.name,
         file_size: (file.size / 1024).toFixed(2) + ' KB',
-        uploaded_by: `User${Math.floor(Math.random() * 1000)}`,
+        uploaded_by: `User${Math.floor(Math.random() * 1000)}`,///FIX:with user auth.name
         uploaded_date: new Date().toISOString().split('T')[0],
         file_url: data.path,
       },
