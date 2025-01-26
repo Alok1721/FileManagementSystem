@@ -15,7 +15,7 @@ const RecentFilesTable = () => {
         const { data, error } = await supabase
           .from('uploads') 
           .select('*')
-          .order('uploaded_date', { ascending: false }) 
+          .order('uploaded_dateTime', { ascending: false }) 
           .limit(5); 
 
         if (error) {
@@ -56,7 +56,7 @@ const RecentFilesTable = () => {
               <tr key={file.id}> 
                 <td>{file.file_name}</td>
                 <td>{file.uploaded_by}</td>
-                <td>{new Date(file.uploaded_date).toLocaleDateString()}</td> 
+                <td>{new Date(file.uploaded_dateTime).toLocaleDateString()}</td> 
                 <td>{file.file_size}</td>
                 <td>{file.file_name.split('.').pop().toUpperCase()}</td>
               </tr>

@@ -6,6 +6,7 @@ import { fetchFiles, uploadFile } from "../services/fileService";
 
 const CloudLift = () => {
   const [files, setFiles] = useState([]);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   useEffect(() => {
     loadFiles();
@@ -23,7 +24,11 @@ const CloudLift = () => {
     const { success, error } = await uploadFile(file);
 
     if (success) {
+      setSuccessMessage("File uploaded successfully!");
       loadFiles();
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
     } else {
       console.error('Error during file upload:', error);
     }
@@ -31,6 +36,12 @@ const CloudLift = () => {
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+      {/* Success Message Popup */}
+      {successMessage && (
+        <div className="success-popup">
+          {successMessage}
+        </div>
+      )}
       <h2>Cloud Lift - File Upload</h2>
       <div
         style={{
@@ -59,7 +70,7 @@ const CloudLift = () => {
             <tr key={index}>
               <td>{file.file_name}</td>
               <td>{file.file_size}</td>
-              <td>{file.uploaded_date}</td>
+              <td>{new Date(file.uploaded_dateTime).toLocaleDateString()}</td>
               <td>{file.uploaded_by}</td>
               <td>
                 <a href={`https://svudmitjvxqhfmymuqlr.supabase.co/storage/v1/object/public/uploads/${file.file_url}`} target="_blank" rel="noopener noreferrer">

@@ -1,6 +1,6 @@
 // src/pages/AiSeeker.jsx
 import React, { useState, useEffect } from "react";
-import { fetchFiles } from "../services/fileService";
+import { fetchFiles,searchFilesByQuery } from "../services/fileService";
 import "../styles/aiSeeker.css";
 
 const AiSeeker = () => {
@@ -16,14 +16,21 @@ const AiSeeker = () => {
     setFiles(data);
   };
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange =async (event) => {
     setSearchTerm(event.target.value);
+    if (event.target.value.length > 0) {
+      const results = await searchFilesByQuery(event.target.value);
+      setFiles(results);
+    } else {
+      loadFiles();
+    }
   };
 
-  const filteredFiles = files.filter((file) =>
-    file.file_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    file.uploaded_by.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  
+  // const filteredFiles = files.filter((file) =>
+  //   file.file_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   file.uploaded_by.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <div className="ai-seeker-container">
@@ -47,12 +54,12 @@ const AiSeeker = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredFiles.length > 0 ? (
-            filteredFiles.map((file, index) => (
+          {files.length > 0 ? (
+            files.map((file, index) => (
               <tr key={index}>
                 <td>{file.file_name}</td>
                 <td>{file.file_size}</td>
-                <td>{file.uploaded_date}</td>
+                <td>{new Date(file.uploaded_dateTime).toLocaleDateString()}</td>
                 <td>{file.uploaded_by}</td>
                 <td>
                   <a href={`https://svudmitjvxqhfmymuqlr.supabase.co/storage/v1/object/public/uploads/${file.file_url}`} target="_blank" rel="noopener noreferrer">View File</a>
