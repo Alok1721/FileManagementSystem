@@ -2,52 +2,30 @@
 import "../styles/cloudLift.css";
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../createClient.js';
+import { fetchFiles, uploadFile } from "../services/fileService";
 
 const CloudLift = () => {
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
-    fetchFiles();
+    loadFiles();
   }, []);
 
-  const fetchFiles = async () => {
-    let { data, error } = await supabase.from('uploads').select('*').order('uploaded_date',{ascending:false}).limit(10);
-    if (error) {
-      console.error('Error fetching files:', error);
-    } else {
-      setFiles(data);
-    }
+  const loadFiles = async () => {
+    const data = await fetchFiles();
+    setFiles(data);
   };
-
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const fileName = `${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage.from('uploads').upload(fileName, file);
+    const { success, error } = await uploadFile(file);
 
-    if (error) {
-      console.error('Upload error:', error);
-      return;
-    }
-
-    const { error: insertError } = await supabase.from('uploads').insert([
-      {
-        // id: 2,
-        file_name: file.name,
-        file_size: (file.size / 1024).toFixed(2) + ' KB',
-        uploaded_by: `User${Math.floor(Math.random() * 1000)}`,///FIX:with user auth.name
-        uploaded_date: new Date().toISOString().split('T')[0],
-        file_url: data.path,
-      },
-    ]);
-
-    if (insertError) {
-      console.error('Database insert error:', insertError);
-      alert('Error:', insertError.message);
+    if (success) {
+      loadFiles();
     } else {
-      fetchFiles();
+      console.error('Error during file upload:', error);
     }
   };
 
