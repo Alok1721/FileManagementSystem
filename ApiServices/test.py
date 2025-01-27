@@ -1,45 +1,16 @@
-import pdfplumber
-from PIL import Image
-import io
-import easyocr
+import torch
+from sentence_transformers import SentenceTransformer
 
-# Initialize the EasyOCR reader
-reader = easyocr.Reader(['en'])  # Specify the language(s)
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
-def extract_text_from_pdf(file):
-    try:
-        with pdfplumber.open(file) as pdf:
-            text = ""
-            for page in pdf.pages:
-                print(f"Processing page {page.page_number}...")
-                if(page.page_number >5):
-                    continue
-                # Extract text directly from the page (if any)
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
-                
-                # Check if the page contains images
-                if page.images:
-                    for img in page.images:
-                        try:
-                            # Extract the image from the page
-                            img_obj = img['stream']
-                            img_data = img_obj.get_data()  # Extract raw image data
-                            pil_image = Image.open(io.BytesIO(img_data))
-                            
-                            # Perform OCR on the image using EasyOCR
-                            results = reader.readtext(pil_image)
-                            for result in results:
-                                text += result[1] + "\n"  # Append the detected text
-                        except Exception as img_error:
-                            print(f"Error processing image on page {page.page_number}: {img_error}")
-        
-        return text
-    except Exception as e:
-        print(f"Error extracting text from PDF: {e}")
-        return ""  # Return empty string if error occurs
+# Generate embeddings
+query_embedding = model.encode("i want to know about a boy who is goog at flutter and student at mnit jaipur name is alok")
+stored_embedding = model.encode("Alok Kumar 2022uec1721@mnit.ac.in| 8882806064 | LinkedIn | Github | Leetcode Education MalaviyaNationalInstituteofTechnology Oct2022–Present B.TechinElectronicsandCommunicationEngineering • Coursework: DataStructures,OperatingSystems,ComputerArchitecture,Microprocessors,EmbeddedSystems,VLSI. Technical Skills • ProgrammingLanguages: Python,C++,Dart,C • Databases: Firebase,SQL,NeonDB • DevOps: Docker,Jenkins,Linux,CI/CD • Cross-PlatformDev: Flutter,RESTfulAPIs,Unity • AI/ML:NLP,Transformers,CNNs,Remotesensing,Supervised/UnsupervisedLearning • ComputerVision: OpenCV,YOLO,CNN,StereoVision • SoftwareTools/Libraries: AndroidStudio,Git,TensorFlow,Pandas,Github,Postman,Tkinter Experience ISROIROC-UROVERCHALLENGE2024,Zine–Jaipur LINK Dec2023–July2024 • Developedanautonomouspath-planningsystemforalunarrover,boostingefficiencyby20%usingSLAMandROS. • Improvednavigationaccuracytowithin5cmincomplexterrainsbyimplementing6DoFposeestimationand integratingJetsonXavierandRaspberryPiforembeddedcontrol. INTERNUNDERPROFESSOR,Airforce–Jaipur LINK Mar2024–May2024 • Optimizedmissilerequirementalgorithms,achievinga30%accuracyincreaseand25%fasterdecision-makingin Taiwan-Chinasimulations. Projects FAKENEWSDETECTION|PyTorchGeometric,GNNs,NLP,ML, LINK Nov2024–present • DevelopedapipelinetoFlagFakeNewsArticleusingGraphNeuralNetworks(GNNs)andreal-timeanalysisusingweb Scraping. • Achieveda85%classificationaccuracy,outperformingtraditionalmodelsby20%... ZINEAPP|Flutter,RESTAPI,Firebase,NeonDB,WebSocket, LINK LINK Nov2024–present • MigratedbackendfromFirebasetoSpringBootAPIwithNeonDB,improvingdataretrievalspeedby40% • RedesignedUI,boostingusersatisfactionby25%. • IntegratedReal-TimeChatviaWebSockets,increasinguserengagement.Achieved1000+activeusers. RLSOCCER|REINFORCEMENTLEARNING,OPENCV,UNITY, LINK LINK • Designedautonomoussoccer-playingrobots,enhancingteamcollaborationby30%. • OptimizedobjecttrackingwithdeeplearningandPPORL,improvingdecision-makingspeedby30%. DISEASEPREDICTIONAPP|FLUTTER,FIREBASE,ML,RENDER, LINK Oct2023–Dec2023 • CreatedanMVVMappfordiseasepredictionwith70%accuracyusingML(RandomForest). • ImplementedNLPchatbot,reducingresponsetimeby50%. CLIMATEPREDICTIONbyREMOTESENSING|LSTM,MLMODEL,GEE, LINK Sep2024–Nov2024 • ImplementedMLModels(LSTM,RandomForest)achievinga30%fasterclimateforecasts2010-2040. • Processedlargedatasets(over10TBofsatelliteandenvironmentaldata)fromNASAMODISandNOAA. EXTRA-CURRICULAR Mentor-ZineRoboticsandResearchGroup • LedateamofjuniorstudentsindevelopingmultipleprojectsinDevelopmentandRobotics,fosteringteamworkand innovation. • conductedexhibitionsandworkshopsforover300studentsacrossvariousdomains,includingcomputervisionand robotics,promotingthevaluesofintegrity,collaboration,andagrowthmindset. ACHIEVEMENTS • 2ndNationalConferenceonRecentTrendsinSpaceTechnologyExhibition • Top20AllIndia: ISROIROC-UChallenge • Top20: ReckonHackathon ")
 
-# Example usage
-pdf_text = extract_text_from_pdf('ApiServices/dig.pdf')
-print(pdf_text)
+# Compare embeddings
+similarity = 1 - torch.nn.functional.cosine_similarity(
+    torch.tensor(query_embedding),
+    torch.tensor(stored_embedding),
+    dim=0
+)
+print("Similarity:", similarity.item())

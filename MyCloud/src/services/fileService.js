@@ -31,15 +31,12 @@ const generateEmbedding = async (text) => {
 
 
 export const searchFilesByQuery = async (query) => {
-  // Generate embedding for the query
   const queryEmbedding = await generateEmbedding(query);
-
-  // Perform hybrid search using Supabase RPC
   const { data, error } = await supabase.rpc("match_files", {
     query_embedding: queryEmbedding,
-    query_keyword: query, // Use the query as the keyword
-    match_threshold: 0.5, // Adjust as needed
-    match_count: 10,      // Adjust as needed
+    query_keyword: query, // query as the keyword
+    match_threshold: 0.4, 
+    match_count: 10,    
   });
 
   if (error) {
@@ -53,35 +50,47 @@ export const searchFilesByQuery = async (query) => {
 
 const getSummaryEmbeddingFromFlask =async (formData)=>{
   
-  const response = await fetch('http://localhost:8089/extract_text', {
+  try{
+    const response = await fetch('http://localhost:8089/extract_text', {
     method: 'POST',
     body: formData,
   });
   if (!response.ok) {
-    console.error("Failed to extract text:", response.statusText);
-    return;
+    const errorText = await response.text();
+    console.error("Failed to extract text:", response.statusText, errorText);
+    return { error: `Failed to extract text: ${response.statusText} - ${errorText}` };
   }
   const jsonData = await response.json();
   const extractedText = jsonData.extracted_text;
   const partialContent = jsonData.summary;
   const embedding = jsonData.embedding;
   return {partialContent,embedding}
+  }catch(e)
+  {
+    console.error("error from flask backend:");
+    return { error: `Error in getSummaryEmbeddingFromFlask: ${e.message}` };
+  }
 }
 
 
 export const uploadFile = async (file) => {
+  try{
   const fileName = `${Date.now()}-${file.name}`;
-  const { data, error } = await supabase.storage.from('uploads').upload(fileName, file);
-  if (error) {
-    console.error('Upload error:', error);
-    return { success: false, error };
+  const { data, uploadError } = await supabase.storage.from('uploads').upload(fileName, file);
+  if (uploadError) {
+    throw new Error(`Upload to bucket failed: ${uploadError.message}`);
   }
   else{
     console.log("sucess:uploaded in bucket")
   }
+
   const formData = new FormData();
   formData.append('file', file);
-  const { partialContent, embedding } = await getSummaryEmbeddingFromFlask(formData);
+  const { partialContent, embedding,error:flaskError } = await getSummaryEmbeddingFromFlask(formData);
+  if(flaskError)
+  {
+    throw new Error(`Flask API error: ${flaskError}`);
+  }
   const embedding384 = embedding.slice(0, 384);
   const { error: insertError } = await supabase.from('uploads').insert([
     {
@@ -96,10 +105,14 @@ export const uploadFile = async (file) => {
   ]);
 
   if (insertError) {
-    console.error('Database insert error:', insertError);
-    return { success: false, error: insertError };
+    throw new Error(`Database insert failed: ${insertError.message}`);
   }
   console.log("uploaded in table:",data.path)
 
-  return { success: true };
+  return { success: true,message: 'File uploaded successfully!' };
+  }catch(error)
+  {
+    console.error('Error in uploadFile:', error);
+    return {success:false,message:`Error! Upload Failed:${error.message}`};
+  }
 };

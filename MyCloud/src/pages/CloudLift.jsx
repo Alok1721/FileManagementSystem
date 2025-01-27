@@ -7,7 +7,7 @@ import { fetchFiles, uploadFile } from "../services/fileService";
 const CloudLift = () => {
   const [files, setFiles] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
-
+  const [errorMessage, setErrorMessage] = useState(null);
   useEffect(() => {
     loadFiles();
   }, []);
@@ -21,16 +21,20 @@ const CloudLift = () => {
     const file = event.target.files[0];
     if (!file) return;
 
-    const { success, error } = await uploadFile(file);
+    const { success, message } = await uploadFile(file);
 
     if (success) {
-      setSuccessMessage("File uploaded successfully!");
+      setSuccessMessage(message);
       loadFiles();
       setTimeout(() => {
         setSuccessMessage(null);
-      }, 3000);
+      }, 4000);
     } else {
-      console.error('Error during file upload:', error);
+      setErrorMessage(message);
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+      console.error('Error during file upload:', message);
     }
   };
 
@@ -40,6 +44,11 @@ const CloudLift = () => {
       {successMessage && (
         <div className="success-popup">
           {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="error-popup">
+          {errorMessage}
         </div>
       )}
       <h2>Cloud Lift - File Upload</h2>
