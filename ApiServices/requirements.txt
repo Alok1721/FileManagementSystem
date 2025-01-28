@@ -13,3 +13,5 @@ langchain-community==0.0.10
 gunicorn==20.1.0
 setuptools>=65.5.0
 wheel>=0.40.0
+Cython>=0.29.36
+
