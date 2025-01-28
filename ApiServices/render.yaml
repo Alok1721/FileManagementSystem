@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: flask-chat-ai
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: GOOGLE_API_KEY
+        value: "AIzaSyDaLV2r9UaT7bMvEVX9lztTgGCtaSfcJtc" 
+    autoDeploy: true

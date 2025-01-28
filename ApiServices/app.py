@@ -4,7 +4,6 @@ import logging
 import io
 import pdfplumber
 from transformers import pipeline
-import pytesseract
 from PIL import Image
 import numpy as np
 import easyocr
@@ -16,7 +15,7 @@ from sentence_transformers import SentenceTransformer
 
 # Initialize Flask App
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"],
+CORS(app, resources={r"/*": {"origins": ["https://marvelous-macaron-3ae036.netlify.app"],#http://localhost:5173
                              "methods": ["GET", "POST", "OPTIONS"],
                              "allow_headers": ["Content-Type", "Authorization"],
                              "supports_credentials": True
@@ -201,7 +200,6 @@ def extract_text():
     })
 
 def generate_embedding(text):
-    """Generate embedding for the given text."""
     try:
         if not text.strip():
             return []  # Return empty list if text is empty
