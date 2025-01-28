@@ -1,87 +1,115 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
+import logging
+import io
 import pdfplumber
 from transformers import pipeline
-import torch
-import pytesseract
 from PIL import Image
-import io
-import easyocr
 import numpy as np
-import nbformat
+import easyocr
 from docx import Document
+import google.generativeai as genai
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from sentence_transformers import SentenceTransformer
 
+
+# Initialize Flask App
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"],
+CORS(app, resources={r"/*": {"origins": ["https://marvelous-macaron-3ae036.netlify.app"],#http://localhost:5173
                              "methods": ["GET", "POST", "OPTIONS"],
                              "allow_headers": ["Content-Type", "Authorization"],
                              "supports_credentials": True
                              }})
+
+# Initialize easyocr and transformers pipeline
 reader = easyocr.Reader(['en'])
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-embedder = pipeline("feature-extraction", model="sentence-transformers/all-MiniLM-L6-v2")
+embedder = SentenceTransformer('all-MiniLM-L6-v2')
 
-def extract_text_from_file(file):
-    file_extension = file.filename.split('.')[-1].lower()
-    print(f"Processing file: {file.filename}")
-    print(f"File extension: {file_extension}")
-    if file_extension == 'pdf':
-        return extract_text_from_pdf_file(file)
-    elif file_extension in ['docx']:
-        return extract_text_from_docx(file)
-    elif file_extension in ['txt']:
-        return extract_text_from_txt(file)
-    elif file_extension in ['jpg', 'jpeg', 'png']:
-        return extract_text_from_image(file)
-    elif file_extension in ['ipynb']:
-        return extract_text_from_ipynb(file)
-    else:
-        raise ValueError(f"Unsupported file type: {file_extension}")
-def extract_text_from_pdf_file(file):
-    isOnlyImage=False
-    print("file:",file)
-    try:
-        with pdfplumber.open(file) as pdf:
-            text = ""
-            is_text_pdf = False
-            for page in pdf.pages[:3]:  # Check first 3 pages to determine type
-                if page.extract_text().strip():
-                    is_text_pdf = True
-                    break
-            if is_text_pdf:
-                print("\n\ncontain only text\n")
+# Gemini configuration
+GOOGLE_API_KEY = "AIzaSyDaLV2r9UaT7bMvEVX9lztTgGCtaSfcJtc"  # Replace with your API key
+genai.configure(api_key=GOOGLE_API_KEY)
 
+
+class ChatWithMe:
+    def __init__(self, app: Flask):
+        self.app = app
+        CORS(app)
+        self._setup_routes()
+
+    def _setup_routes(self):
+        """Define the routes for the Flask app."""
+        @self.app.route('/chatAi/')
+        def index():
+            return render_template('index.html')
+
+        @self.app.route('/chatAi/upload', methods=['POST'])
+        def upload_pdf():
+            try:
+                if 'file' not in request.files:
+                    return jsonify({"error": "No file uploaded"}), 400
+                file = request.files['file']
+                if file.filename == '':
+                    return jsonify({"error": "No file selected"}), 400
+                
+                text = self.extract_text_from_file(file)
+                chunks = self.get_text_chunks(text)
+                self.app.config['chunks'] = chunks
+                
+                return jsonify({"message": "PDF uploaded and processed successfully"}), 200
+            except Exception as e:
+                logging.error(f"Error in upload: {e}")
+                return jsonify({"error": str(e)}), 500
+
+        @self.app.route('/chatAi/ask', methods=['POST'])
+        def ask_question():
+            try:
+                data = request.json
+                question = data.get('question')
+                if not question:
+                    return jsonify({"error": "No question provided"}), 400
+                
+                chunks = self.app.config.get('chunks', [])
+                context = " ".join(chunks)
+                
+                # Get response from Gemini
+                response = self.get_gemini_response(question, context)
+                
+                return jsonify({"response": response}), 200
+            except Exception as e:
+                logging.error(f"Error in /ask route: {e}")
+                return jsonify({"error": str(e)}), 500
+
+    def extract_text_from_file(self, file):
+        """Extract text from the uploaded file."""
+        file_extension = file.filename.split('.')[-1].lower()
+        if file_extension == 'pdf':
+            return self.extract_text_from_pdf_file(file)
+        elif file_extension in ['docx']:
+            return self.extract_text_from_docx(file)
+        elif file_extension in ['txt']:
+            return self.extract_text_from_txt(file)
+        elif file_extension in ['jpg', 'jpeg', 'png']:
+            return self.extract_text_from_image(file)
+        else:
+            raise ValueError(f"Unsupported file type: {file_extension}")
+
+    def extract_text_from_pdf_file(self, file):
+        """Extract text from a PDF file."""
+        try:
+            with pdfplumber.open(file) as pdf:
+                text = ""
                 for page in pdf.pages:
-                    print(f"Processing page {page.page_number}...")
-                    if(page.page_number >10):
-                        break
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text + "\n"
-            else:
-                print("\n\ncontain only combination of images\n")
-                for page in pdf.pages:
-                    if page.page_number>10:
-                        break
-                    if page.images:
-                        for img in page.images:
-                            try:
-                                img_obj = img['stream']
-                                img_data = img_obj.get_data()
-                                pil_image = Image.open(io.BytesIO(img_data))
-                                img_array = np.array(pil_image)
-                                results = reader.readtext(img_array)
-                                for result in results:
-                                    text += result[1] + "\n"  
-                            except Exception as img_error:
-                                print(f"Error processing image on page {page.page_number}: {img_error}")
-        return text
-    except Exception as e:
-        print(f"Error extracting text from PDF: {e}")
-        return ""  
+                return text
+        except Exception as e:
+            logging.error(f"Error extracting text from PDF: {e}")
+            return ""
 
-def extract_text_from_docx( file):
-        """Extract text from DOCX files"""
+    def extract_text_from_docx(self, file):
+        """Extract text from a DOCX file."""
         try:
             doc = Document(io.BytesIO(file.read()))
             text = ""
@@ -89,82 +117,81 @@ def extract_text_from_docx( file):
                 text += paragraph.text + "\n"
             return text
         except Exception as e:
-            print(f"Error processing DOCX: {e}")
+            logging.error(f"Error extracting text from DOCX: {e}")
             return ""
-def extract_text_from_txt(file):
-    try:
-        return file.read().decode('utf-8')
-    except Exception as e:
-        print(f"Error extracting text from TXT: {e}")
-        return ""
-def extract_text_from_image(file):
+
+    def extract_text_from_txt(self, file):
+        """Extract text from a TXT file."""
+        try:
+            return file.read().decode('utf-8')
+        except Exception as e:
+            logging.error(f"Error extracting text from TXT: {e}")
+            return ""
+
+    def extract_text_from_image(self, file):
+        """Extract text from an image."""
         try:
             image = Image.open(file)
             results = reader.readtext(np.array(image))
             text = " ".join([result[1] for result in results])
             return text
         except Exception as e:
-            print(f"Error extracting text from image: {e}")
+            logging.error(f"Error extracting text from image: {e}")
             return ""
 
-def extract_text_from_ipynb(file):
-    try:
-        import nbformat
-        notebook = nbformat.read(file, as_version=4)
-        text = ""
-        for cell in notebook.cells:
-            if cell.cell_type == 'markdown' or cell.cell_type == 'code':
-                text += cell.source + "\n"
-        return text
-    except Exception as e:
-        print(f"Error extracting text from IPYNB: {e}")
-        return ""
-def summarize_text(text):
-    try:
-        chunks = text.split('\n')  
-        summarized_chunks = []
-        for chunk in chunks:
-            if len(chunk.split()) > 100:
-                summarized = summarizer(chunk, max_length=200, min_length=50, do_sample=False)
-                summarized_chunks.append(summarized[0]['summary_text'])
-            else:
-                summarized_chunks.append(chunk)
-        return ' '.join(summarized_chunks)
-    except Exception as e:
-        print("Error during summarization:", e)
-        return text 
+    def get_text_chunks(self, text):
+        """Split text into chunks for processing."""
+        try:
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=10000,
+                chunk_overlap=1000
+            )
+            chunks = text_splitter.split_text(text)
+            return chunks
+        except Exception as e:
+            logging.error(f"Error splitting text into chunks: {e}")
+            return []
 
-from sentence_transformers import SentenceTransformer
+    def get_gemini_response(self, question, context):
+        """Get response from Gemini API based on the provided context."""
+        try:
+            model = genai.GenerativeModel('gemini-pro')
+            prompt = f"""You are a helpful AI assistant that answers questions based on the given context.
+            Context: {context}
+            
+            Question: {question}
+            
+            Please provide a clear and concise answer based on the context provided. If the answer is not in the context, say "I cannot find information about this in the document."
+            
+            Answer:"""
+            
+            response = model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            logging.error(f"Error interacting with Gemini API: {e}")
+            return "I cannot find information about this in the document."
 
-# Initialize the SentenceTransformer model
-embedder = SentenceTransformer('all-MiniLM-L6-v2')
+    def summarize_text(self, text):
+        """Summarize long text."""
+        try:
+            summarized = summarizer(text, max_length=200, min_length=50, do_sample=False)
+            return summarized[0]['summary_text']
+        except Exception as e:
+            logging.error(f"Error during summarization: {e}")
+            return text
 
-def generate_embedding(text):
-    try:
-        if not text.strip():
-            print("Error: Input text is empty!")
-            return []  
-        print("Input text for embedding:", text[:500])  
-        
-        # Generate sentence-level embedding
-        embedding = embedder.encode(text)
-        
-        # Normalize the embedding to a unit vector
-        embedding = embedding / np.linalg.norm(embedding)
-        
-        print("Generated embedding:", embedding)  
-        return embedding.tolist()  # Convert numpy array to list
-    except Exception as e:
-        print("Error during embedding generation:", e)
-        return []
+
+# Initialize ChatWithMe class
+chat_with_me = ChatWithMe(app)
 
 @app.route('/extract_text', methods=['POST'])
-def extract_text_from_pdf():
+def extract_text():
+    """Route to extract text, summarize, and generate embedding."""
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
     file = request.files['file']
-    text = extract_text_from_file(file)
-    summary = summarize_text(text)
+    text = chat_with_me.extract_text_from_file(file)
+    summary = chat_with_me.summarize_text(text)
     embedding = generate_embedding(summary)
     return jsonify({
         'extracted_text': text,
@@ -172,45 +199,17 @@ def extract_text_from_pdf():
         'embedding': embedding
     })
 
-@app.route('/generate_embedding', methods=['POST'])
-def generate_embedding_route():
-    data = request.get_json()
-    if not data or 'text' not in data:
-        return jsonify({'error': 'Missing "text" in request payload'}), 400
-    text = data['text']
-    embedding = generate_embedding(text)
-    if not embedding:
-        return jsonify({'error': 'Failed to generate embedding'}), 500
-    return jsonify({'embedding': embedding})
-
-# def extract_text_from_pdf(file):
-#     try:
-#         with pdfplumber.open(file) as pdf:
-#             text = ""
-#             for page in pdf.pages:
-#                 print(f"Processing page {page.page_number}...")
-#                 if(page.page_number >10):
-#                     continue
-#                 page_text = page.extract_text()
-#                 if page_text:
-#                     text += page_text + "\n"
-#                 # if page.images:
-#                 #     for img in page.images:
-#                 #         try:
-#                 #             img_obj = img['stream']
-#                 #             img_data = img_obj.get_data()
-#                 #             pil_image = Image.open(io.BytesIO(img_data))
-#                 #             results = reader.readtext(pil_image)
-#                 #             for result in results:
-#                 #                 text += result[1] + "\n"  
-#                 #         except Exception as img_error:
-#                 #             print(f"Error processing image on page {page.page_number}: {img_error}")
-#         return text
-#     except Exception as e:
-#         print(f"Error extracting text from PDF: {e}")
-#         return ""  
+def generate_embedding(text):
+    try:
+        if not text.strip():
+            return []  # Return empty list if text is empty
+        embedding = embedder.encode(text)
+        embedding = embedding / np.linalg.norm(embedding)
+        return embedding.tolist()
+    except Exception as e:
+        logging.error(f"Error during embedding generation: {e}")
+        return []
 
 
-   
 if __name__ == '__main__':
     app.run(debug=True, port=8089)
