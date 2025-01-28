@@ -12,4 +12,4 @@ sentence-transformers==2.2.2
 langchain-community==0.0.10
 gunicorn==20.1.0
 setuptools>=65.5.0
-wheel
+wheel>=0.40.0
