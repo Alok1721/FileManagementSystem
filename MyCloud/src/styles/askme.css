@@ -83,3 +83,71 @@
 .input-container button:hover {
     background: #0056b3;
 }
+
+.upload-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+  }
+  
+  .upload-button:hover {
+    background-color: #45a049;
+  }
+  .success-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    background-color: #d4edda; /* Light green background */
+    color: #155724; /* Dark green text */
+    border: 2px solid #c3e6cb; /* Green border */
+    border-bottom: 5px solid #28a745; /* Thick green bottom border */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Ensure it appears above other content */
+    animation: slideIn 0.5s ease-out;
+  }
+  
+  /* Slide-in animation */
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  .error-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    background-color: #eea981; /* Light green background */
+    color: #ba0d07; /* Dark green text */
+    border: 2px solid #926208; /* Green border */
+    border-bottom: 5px solid #f91808; /* Thick green bottom border */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(245, 183, 183, 0.1);
+    z-index: 1000; /* Ensure it appears above other content */
+    animation: slideIn 0.5s ease-out;
+  }
+  
+  /* Slide-in animation */
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }  
