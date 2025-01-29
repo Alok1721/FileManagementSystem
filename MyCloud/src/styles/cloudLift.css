@@ -1,90 +1,125 @@
-.container {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  
-  h2 {
-    color: #333;
-    text-align: center;
-  }
-  
-  .upload-box {
-    border: 2px dashed #007bff;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-    cursor: pointer;
-  }
-  
-  .upload-label {
-    cursor: pointer;
-    color: #007bff;
-    font-weight: bold;
-  }
-  
-  .file-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .file-table th, .file-table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-  }
-  
-  .file-table th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-  }
-  
-  .file-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  /* Success Popup Styles */
+/* Main Container */
+.cloudlift-container {
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, rgba(240, 255, 255, 0.6), rgba(240, 240, 250, 0.7));
+  border-radius: 20px;
+  max-width: 1200px; /* Increased max-width for better full-page display */
+  margin: 40px auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 90%; /* Ensure it takes up most of the page width */
+}
+
+/* Heading */
+h2 {
+  color: #1e3a8a;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 600;
+  margin-bottom: 28px;
+  letter-spacing: 1px;
+  text-transform: capitalize;
+}
+
+/* Upload Box */
+.upload-box {
+  border: 2px dashed rgba(0, 123, 255, 0.6);
+  background: rgba(0, 123, 255, 0.1);
+  padding: 35px;
+  text-align: center;
+  margin-bottom: 35px;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+.upload-box:hover {
+  background: rgba(0, 123, 255, 0.15);
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+/* Upload Label */
+.upload-label {
+  cursor: pointer;
+  color: #007bff;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.upload-label:hover {
+  color: #0056b3;
+}
+
+/* File Table */
+.file-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.file-table th,
+.file-table td {
+  border: 1px solid #ddd;
+  padding: 15px 20px;
+  text-align: left;
+}
+
+.file-table th {
+  background: rgba(240, 240, 250, 0.8);
+  color: #333;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.file-table tr:nth-child(even) {
+  background-color: rgba(240, 255, 255, 0.4);
+}
+
+.file-table tr:hover {
+  background: rgba(0, 123, 255, 0.1);
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+/* Success Popup */
 .success-popup {
   position: fixed;
   top: 20px;
   right: 20px;
-  padding: 15px 20px;
-  background-color: #d4edda; /* Light green background */
-  color: #155724; /* Dark green text */
-  border: 2px solid #c3e6cb; /* Green border */
-  border-bottom: 5px solid #28a745; /* Thick green bottom border */
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000; /* Ensure it appears above other content */
+  padding: 15px 25px;
+  background: rgba(212, 237, 218, 0.95);
+  color: #155724;
+  border: 2px solid #c3e6cb;
+  border-bottom: 5px solid #28a745;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
   animation: slideIn 0.5s ease-out;
 }
 
-/* Slide-in animation */
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
+/* Error Popup */
 .error-popup {
   position: fixed;
   top: 20px;
   right: 20px;
-  padding: 15px 20px;
-  background-color: #eea981; /* Light green background */
-  color: #ba0d07; /* Dark green text */
-  border: 2px solid #926208; /* Green border */
-  border-bottom: 5px solid #f91808; /* Thick green bottom border */
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(245, 183, 183, 0.1);
-  z-index: 1000; /* Ensure it appears above other content */
+  padding: 15px 25px;
+  background: rgba(255, 204, 188, 0.95);
+  color: #ba0d07;
+  border: 2px solid rgba(255, 140, 140, 0.9);
+  border-bottom: 5px solid #f91808;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
   animation: slideIn 0.5s ease-out;
 }
 
-/* Slide-in animation */
+/* Animation for popups */
 @keyframes slideIn {
   from {
     transform: translateX(100%);

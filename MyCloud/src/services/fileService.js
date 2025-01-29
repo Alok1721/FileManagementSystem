@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { pipeline } from "@xenova/transformers";
 import { supabase } from "../createClient.js";
+import BackendProperties from "../BackendProperties";
 
 export const fetchFiles = async () => {
   let { data, error } = await supabase.from("uploads").select("*").order("uploaded_dateTime", { ascending: false }); // Limit to 10 latest files
@@ -12,21 +13,16 @@ export const fetchFiles = async () => {
 };
 
 const generateEmbedding = async (text) => {
-  const response = await fetch('http://localhost:8089/generate_embedding', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  const { success, result } = await BackendProperties.callEndpoint(BackendProperties.ENDPOINTS.GENERATE_EMBEDDING, {
     body: JSON.stringify({ text }),
-  });
+    headers: { "Content-Type": "application/json" },
+});
 
-  if (!response.ok) {
-    console.error('Failed to generate embedding:', response.statusText);
+  if (!success) {
+    console.error('Failed to generate embedding:', result);
     return null;
   }
-
-  const data = await response.json();
-  return data.embedding;
+  return result.embedding;
 };
 
 
@@ -51,19 +47,15 @@ export const searchFilesByQuery = async (query) => {
 const getSummaryEmbeddingFromFlask =async (formData)=>{
   
   try{
-    const response = await fetch('http://localhost:8089/extract_text', {
-    method: 'POST',
-    body: formData,
-  });
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Failed to extract text:", response.statusText, errorText);
-    return { error: `Failed to extract text: ${response.statusText} - ${errorText}` };
+    const { success, result } = await BackendProperties.callEndpoint(BackendProperties.ENDPOINTS.EXTRACT_TEXT, {
+      method: 'POST',
+      body: formData, // Sending the file's formData to the backend
+    });
+  if (!success) {
+    console.error("Failed to extract text:", result);
+    return { error: `Failed to extract text:${result}`};
   }
-  const jsonData = await response.json();
-  const extractedText = jsonData.extracted_text;
-  const partialContent = jsonData.summary;
-  const embedding = jsonData.embedding;
+  const { extracted_text, partialContent, embedding } = result;
   return {partialContent,embedding}
   }catch(e)
   {

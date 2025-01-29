@@ -1,12 +1,21 @@
 const BackendProperties = {
-    BASE_URL: "http://localhost:8089/chatAi",
+    BASE_URL: "http://localhost:8086",
     ENDPOINTS: {
         UPLOAD: {
-            URI: "/upload",
+            URI: "/chatAi/upload",
             METHOD: "POST",
         },
         ASK: {
-            URI: "/ask",
+            URI: "/chatAi/ask",
+            METHOD: "POST",
+        },
+        EXTRACT_TEXT:{
+            URI:"/extract_text",
+            METHOD: "POST",
+
+        },
+        GENERATE_EMBEDDING: {
+            URI: "/generate_embedding", 
             METHOD: "POST",
         },
     },

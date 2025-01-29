@@ -15,7 +15,7 @@ from sentence_transformers import SentenceTransformer
 
 # Initialize Flask App
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://marvelous-macaron-3ae036.netlify.app"],#http://localhost:5173
+CORS(app, resources={r"/*": {"origins": ["http://localhost:5173","https://marvelous-macaron-3ae036.netlify.app"],#http://localhost:5173https://marvelous-macaron-3ae036.netlify.app
                              "methods": ["GET", "POST", "OPTIONS"],
                              "allow_headers": ["Content-Type", "Authorization"],
                              "supports_credentials": True
@@ -212,4 +212,4 @@ def generate_embedding(text):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8089)
+    app.run(host="0.0.0.0", port=8089)

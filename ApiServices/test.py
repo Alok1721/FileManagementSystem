@@ -210,4 +210,4 @@ def generate_embedding(text):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8089)
+    app.run(debug=True, port=8086)

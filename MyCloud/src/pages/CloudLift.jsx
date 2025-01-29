@@ -1,13 +1,12 @@
-
-import "../styles/cloudLift.css";
+import "../styles/cloudlift.css";
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../createClient.js';
 import { fetchFiles, uploadFile } from "../services/fileService";
 
 const CloudLift = () => {
   const [files, setFiles] = useState([]);
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+
   useEffect(() => {
     loadFiles();
   }, []);
@@ -39,7 +38,7 @@ const CloudLift = () => {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+    <div className="cloudlift-container">
       {/* Success Message Popup */}
       {successMessage && (
         <div className="success-popup">
@@ -52,26 +51,20 @@ const CloudLift = () => {
         </div>
       )}
       <h2>Cloud Lift - File Upload</h2>
-      <div
-        style={{
-          border: '2px dashed #007bff',
-          padding: '20px',
-          textAlign: 'center',
-          marginBottom: '20px',
-        }}
-      >
+      <div className="upload-box">
         <input type="file" onChange={handleFileUpload} style={{ display: 'none' }} id="fileInput" />
-        <label htmlFor="fileInput" style={{ cursor: 'pointer', color: '#007bff' }}>
+        <label htmlFor="fileInput" className="upload-label">
           Click here to upload your file
         </label>
       </div>
-      <table border="1" width="100%" cellPadding="10">
+      <table className="file-table">
         <thead>
           <tr>
             <th>File Name</th>
             <th>File Size</th>
             <th>Last Modified</th>
             <th>Uploaded By</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
