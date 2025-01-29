@@ -60,30 +60,35 @@ const AskMe = () => {
       </div>
 
       <div className="input-container">
+        <div className="upload-wrapper">
         <button
           onClick={() => document.getElementById("pdf-upload").click()}
           className="upload-button"
           disabled={isUploading}
         >
           {isUploading ? "Uploading..." : "Upload PDF"}
-        </button>
+        
         <input
           type="file"
           id="pdf-upload"
           accept=".pdf"
           style={{ display: "none" }}
           onChange={handleFileChange}
-        />
+        /></button>
+        </div>
+        
+        
 
         <input
           type="text"
           placeholder="Enter your question..."
           value={question}
+          className="question-box"
           onChange={(e) => setQuestion(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && handleSend()}
         />
 
-        <button onClick={handleSend}>➤</button>
+        <button className="send-button" onClick={handleSend}>➤</button>
       </div>
 
       {showSuccessPopup && (

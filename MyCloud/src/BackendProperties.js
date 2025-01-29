@@ -1,5 +1,5 @@
 const BackendProperties = {
-    BASE_URL: "http://localhost:8086",
+    BASE_URL: "http://localhost:8089",
     ENDPOINTS: {
         UPLOAD: {
             URI: "/chatAi/upload",
