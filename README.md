@@ -1,6 +1,6 @@
 # File Management System
 
-![File Management System](![Image](https://github.com/user-attachments/assets/32bf7ae5-e5cf-4682-b486-c16542b69c7d)) 
+![File Management System](https://github.com/user-attachments/assets/32bf7ae5-e5cf-4682-b486-c16542b69c7d) 
 
 ## Overview
 
@@ -28,7 +28,7 @@ Effortlessly find any file with our File Management System. This application uti
 - **"Talk with Any File" Feature**: Integrate with language models to interact with various file types, including images.
 - **File Organization and Folder Management**: Implement a hierarchical file structure with folder creation and organization.
 - **Fast Search with Contextual Recall**: Optimize search queries with fuzzy search and context-aware search.
-![ChatWithAnyFile](![Image](https://github.com/user-attachments/assets/c2653bb1-0e6c-4ed1-a415-b747075c49dd)) 
+![ChatWithAnyFile](https://github.com/user-attachments/assets/c2653bb1-0e6c-4ed1-a415-b747075c49dd) 
 ## Technologies Used
 
 - **Languages**: Python (Backend), JavaScript (Frontend), SQL
